@@ -1,0 +1,52 @@
+# --- Haskell / Cabal ---
+dist/
+dist-newstyle/
+.stack-work/
+.cabal-sandbox/
+cabal.sandbox.config
+*.hi
+*.o
+*.dyn_o
+*.dyn_hi
+.ghc.environment.*
+
+# --- Scala / sbt / Coursier ---
+target/
+project/target/
+project/project/
+.bsp/
+.bloop/
+.metals/
+*.class
+*.log
+.cache/
+coursier/
+ivy-cache/
+
+# --- Editors ---
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+*~
+
+# --- Build artifacts ---
+*.pdf
+*.aux
+*.log
+*.toc
+qsort.c
+qsort.tex
+qsort.html
+
+# --- Local secrets / env ---
+.env
+.env.local
+*.local
+
+# --- OS / misc ---
+node_modules/
+__pycache__/
+*.pyc

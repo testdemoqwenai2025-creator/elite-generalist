@@ -1,0 +1,50 @@
+[
+  {
+    "userId": "u-1",
+    "name": "Alice Martin",
+    "email": "alice.martin@example.fr",
+    "country": "FR"
+  },
+  {
+    "userId": "u-2",
+    "name": "Bob Lefebvre",
+    "email": "bob.lefebvre@example.fr",
+    "country": "FR"
+  },
+  {
+    "userId": "u-3",
+    "name": "Carol Bernard",
+    "email": "carol.bernard@example.fr",
+    "country": "FR"
+  },
+  {
+    "userId": "u-4",
+    "name": "David Petit",
+    "email": "david.petit@example.fr",
+    "country": "FR"
+  },
+  {
+    "userId": "u-5",
+    "name": "Eve Robinson",
+    "email": "eve.robinson@example.us",
+    "country": "US"
+  },
+  {
+    "userId": "u-6",
+    "name": "Frank Walker",
+    "email": "frank.walker@example.uk",
+    "country": "GB"
+  },
+  {
+    "userId": "u-7",
+    "name": "Greta Schmidt",
+    "email": "greta.schmidt@example.de",
+    "country": "DE"
+  },
+  {
+    "userId": "u-8",
+    "name": "Hiroshi Tanaka",
+    "email": "hiroshi.tanaka@example.jp",
+    "country": "JP"
+  }
+]

@@ -1,0 +1,36 @@
+tx_id,actor_id,user_id,amount_cents,currency,ts,memo
+tx-0001,actor-alice,u-1,150000,EUR,1704067200,Salary Aug 2024
+tx-0002,actor-bob,u-2,-4500,EUR,1704153600,Grocery Carrefour
+tx-0003,actor-bob,u-2,-1200,EUR,1704240000,Cafe Le Comptoir
+tx-0004,actor-alice,u-1,22500,EUR,1704326400,Freelance invoice INV-204
+tx-0005,actor-bob,u-2,-8900,EUR,1704412800,Electricity EDF
+tx-0006,actor-carol,u-3,300000,EUR,1704499200,Salary Aug 2024
+tx-0007,actor-bob,u-2,-2200,EUR,1704585600,Metro pass monthly
+tx-0008,actor-dave,u-4,-15000,EUR,1704672000,Rent September
+tx-0009,actor-dave,u-4,50000,EUR,1704758400,Salary Aug 2024
+tx-0010,actor-bob,u-2,-6500,EUR,1704844800,Restaurant Le Cinq
+tx-0011,actor-eve,u-5,75000,USD,1704931200,Consulting fee Q3
+tx-0012,actor-bob,u-2,-3400,EUR,1705017600,Pharmacy
+tx-0013,actor-alice,u-1,-7800,EUR,1705104000,New running shoes
+tx-0014,actor-dave,u-4,-22000,EUR,1705190400,Car insurance quarterly
+tx-0015,actor-carol,u-3,-12000,EUR,1705276800,Supermarket Picard
+tx-0016,actor-bob,u-2,-1800,EUR,1705363200,Bakery Du Pain
+tx-0017,actor-frank,u-6,500000,GBP,1705449600,Salary Aug 2024
+tx-0018,actor-frank,u-6,-45000,GBP,1705536000,Mortgage payment
+tx-0019,actor-alice,u-1,12000,EUR,1705622400,Refund Zalando
+tx-0020,actor-bob,u-2,-9999,EUR,1705708800,Concert ticket Bataclan
+tx-0021,actor-eve,u-5,-15000,USD,1705795200,New laptop
+tx-0022,actor-carol,u-3,-3500,EUR,1705881600,Bookshop Gibert
+tx-0023,actor-ghost,u-9,-25000,EUR,1705968000,Unknown sender suspicious
+tx-0024,actor-alice,u-1,-5500,EUR,1706054400,Spa day
+tx-0025,actor-dave,u-4,-9000,EUR,1706140800,Internet fibre Free
+tx-0026,actor-frank,u-6,-12000,GBP,1706227200,Restaurant
+tx-0027,actor-bob,u-2,-2700,EUR,1706313600,Cinema
+tx-0028,actor-eve,u-5,80000,USD,1706400000,Bonus Q3
+tx-0029,actor-alice,u-1,-4000,EUR,1706486400,Streaming subscriptions
+tx-0030,actor-bob,u-2,-7200,EUR,1706572800,Weekend trip train
+tx-0031,actor-ghost,u-9,100000,EUR,1706659200,Suspicious large credit
+tx-0032,actor-carol,u-3,-2800,EUR,1706745600,Coffee subscription
+tx-0033,actor-dave,u-4,15000,EUR,1706832000,Tax refund
+tx-0034,actor-frank,u-6,-8500,GBP,1706918400,Supermarket Tesco
+tx-0035,actor-alice,u-1,30000,EUR,1707004800,Side gig payment

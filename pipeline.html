@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Elite Generalist — The Pipeline</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --panel: #12151c;
+    --ink: #e6e9ef;
+    --muted: #9aa3b2;
+    --accent: #7cf0c1;
+    --accent-2: #f0c16c;
+    --danger: #ff7a7a;
+    --line: #1f2430;
+    --code: #cbe6ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif;
+    margin: 0; padding: 0; line-height: 1.55; }
+  header { padding: 56px 8vw 32px; border-bottom: 1px solid var(--line); }
+  h1 { font-size: clamp(28px, 4vw, 44px); margin: 0 0 8px; letter-spacing: -0.02em; }
+  h1 .em { color: var(--accent); }
+  .lede { color: var(--muted); max-width: 760px; font-size: 17px; }
+  main { padding: 32px 8vw 80px; max-width: 1200px; margin: 0 auto; }
+  h2 { font-size: 22px; margin: 48px 0 12px; letter-spacing: -0.01em; }
+  p, li { color: var(--ink); }
+  .muted { color: var(--muted); }
+
+  /* ---------- pipeline diagram ---------- */
+  .pipeline { display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 16px; margin: 28px 0 12px; position: relative; }
+  .phase { background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 18px 16px 16px; position: relative;
+    transition: transform 120ms ease, border-color 120ms ease; }
+  .phase:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .phase .n { font-size: 11px; letter-spacing: 0.18em; color: var(--accent-2);
+    text-transform: uppercase; }
+  .phase h3 { margin: 6px 0 8px; font-size: 16px; }
+  .phase p  { font-size: 13px; color: var(--muted); margin: 0; }
+  .phase .kills { display: inline-block; margin-top: 10px; font-size: 11px;
+    padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line);
+    color: var(--accent); }
+  .arrow { position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
+    color: var(--accent-2); font-size: 20px; user-select: none; }
+
+  /* ---------- comparison table ---------- */
+  .compare { width: 100%; border-collapse: collapse; margin: 16px 0;
+    font-size: 14px; background: var(--panel); border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--line); }
+  .compare th, .compare td { padding: 12px 14px; text-align: left;
+    border-bottom: 1px solid var(--line); }
+  .compare th { background: #0e1118; color: var(--muted);
+    text-transform: uppercase; font-size: 11px; letter-spacing: 0.1em; }
+  .compare tr:last-child td { border-bottom: 0; }
+  .compare td.bad { color: var(--danger); }
+  .compare td.good { color: var(--accent); }
+
+  /* ---------- code blocks ---------- */
+  pre, code { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+  pre { background: #06080d; border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto; font-size: 13px; line-height: 1.55;
+    color: var(--code); }
+  code { background: #161a23; padding: 1px 6px; border-radius: 5px; font-size: 13px; }
+  pre code { background: transparent; padding: 0; }
+
+  /* ---------- file tree ---------- */
+  .tree { background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 16px 20px; font-size: 13px;
+    line-height: 1.7; color: var(--muted); }
+  .tree b { color: var(--ink); }
+  .tree .hl { color: var(--accent); }
+
+  /* ---------- 3-column callout ---------- */
+  .three { display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin: 16px 0; }
+  .card { background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 18px; }
+  .card .tag { font-size: 11px; letter-spacing: 0.18em; color: var(--accent);
+    text-transform: uppercase; }
+  .card h3 { margin: 6px 0 6px; font-size: 15px; }
+  .card p  { margin: 0; font-size: 13px; color: var(--muted); }
+
+  footer { padding: 40px 8vw 60px; color: var(--muted); font-size: 12px;
+    border-top: 1px solid var(--line); margin-top: 60px; }
+
+  @media (max-width: 900px) {
+    .pipeline { grid-template-columns: 1fr 1fr; }
+    .arrow { display: none; }
+    .three { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .pipeline { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>The <span class="em">Elite Generalist</span> Pipeline</h1>
+  <p class="lede">
+    From manual state management to declarative composition.
+    Software that is automatically verified (literate C, property tests)
+    and mathematically optimized (Haskell / Scala 3 / ZIO).
+    One developer. One local agent. Revenues that used to require a department.
+  </p>
+</header>
+
+<main>
+
+  <!-- ===================== THE FIVE PHASES ===================== -->
+  <h2>The five-phase flywheel</h2>
+  <div class="pipeline">
+    <div class="phase">
+      <div class="n">Phase 0</div>
+      <h3>Specify</h3>
+      <p>Type signatures as contracts. The compiler is your first reviewer.</p>
+      <span class="kills">kills "spec drift"</span>
+      <span class="arrow">→</span>
+    </div>
+    <div class="phase">
+      <div class="n">Phase 1</div>
+      <h3>Compose</h3>
+      <p>The service is <code>auditLedger . enrichWith . normalize</code> — a function.</p>
+      <span class="kills">kills state bugs</span>
+      <span class="arrow">→</span>
+    </div>
+    <div class="phase">
+      <div class="n">Phase 2</div>
+      <h3>Verify</h3>
+      <p>Property-based tests hunt the counter-example. 1000 generated cases per property.</p>
+      <span class="kills">kills test rot</span>
+      <span class="arrow">→</span>
+    </div>
+    <div class="phase">
+      <div class="n">Phase 3</div>
+      <h3>Document</h3>
+      <p>Code is the doc. Haddock, Scaladoc, or <code>cweave</code>'d PDF from a <code>.w</code> file.</p>
+      <span class="kills">kills doc drift</span>
+      <span class="arrow">→</span>
+    </div>
+    <div class="phase">
+      <div class="n">Phase 4–5</div>
+      <h3>Package → Distribute</h3>
+      <p>9 transitive deps, all signed. One static binary, no SaaS, no Datadog invoice.</p>
+      <span class="kills">kills cloud bloat</span>
+    </div>
+  </div>
+
+  <!-- ===================== THE HASKELL CORE ===================== -->
+  <h2>The whole service, in one line (Haskell)</h2>
+  <p>State is threaded, not hidden. There is no <code>Service</code>, no
+  <code>Repository</code>, no <code>@Autowired</code>. There is a function.</p>
+
+<pre><code>main :: IO ()
+main = do
+  raw   &lt;- readTransactions "data/transactions.csv"
+  users &lt;- readUsers       "data/users.json"
+  let report = auditLedger              -- pure
+            . enrichWith users          -- pure
+            . normalize                 -- pure
+            $ raw
+  writeJsonReport "reports/audit.json" report</code></pre>
+
+  <!-- ===================== THE SCALA MIRROR ===================== -->
+  <h2>The same shape, in Scala 3 (typed IO at the boundary)</h2>
+
+<pre><code>// Algebraic types (sum) for the closed Currency domain.
+enum Currency derives JsonCodec:
+  case EUR, USD, GBP, JPY
+
+// Opaque types: the compiler refuses to mix UserId with TxId.
+opaque type UserId = String
+object UserId { def apply(s: String): UserId = s }
+
+// The whole pipeline as a ZIO effect. Effects are explicit, typed, and at the cliff.
+val audit: ZIO[Clock, Throwable, AuditReport] =
+  for
+    users  &lt;- loadUsers("data/users.json")
+    txs    &lt;- loadTransactions("data/transactions.csv")
+    report =  auditLedger(clock.now, users)(txs)   // PURE
+    _      &lt;- writeReport("reports/audit.json", report)
+  yield report</code></pre>
+
+  <!-- ===================== PROPERTIES ===================== -->
+  <h2>Verification by theorem, not example</h2>
+  <p>You don't write <em>given [tx1, tx2], expect X</em>. You write the
+  theorem. QuickCheck / ScalaCheck find the counter-example.</p>
+
+<pre><code>-- | For all transaction lists and user lists, the audit preserves
+--   the total credit and debit sums.
+prop_auditPreservesTotal :: [User] -&gt; [Transaction] -&gt; Property
+prop_auditPreservesTotal users txs =
+  let report = auditLedger 0 users txs
+      sumPos = sumCredits txs
+      sumNeg = sumDebits  txs
+  in totalCredits report === sumPos
+     .&amp;. totalDebits  report === sumNeg
+
+-- | Every distinct user id appearing in the input appears exactly once
+--   in 'allSummaries'.
+prop_auditNeverLosesUsers :: [User] -&gt; [Transaction] -&gt; Property
+prop_auditNeverLosesUsers users txs =
+  let r        = auditLedger 0 users txs
+      inputIds  = nub (map userId    txs)
+      outputIds = map userId' (allSummaries r)
+  in sort (filter (not . Text.null) inputIds) === sort outputIds</code></pre>
+
+  <!-- ===================== LITERATE C ===================== -->
+  <h2>Literate C — code IS the manual</h2>
+  <p>One source file produces two artifacts: the <code>.c</code> for the
+  compiler, and the <code>.tex</code>/<code>.html</code> for the human.
+  No README. No Confluence. No rot.</p>
+
+<pre><code>@* The partition step.
+@  We choose the last element as pivot; this costs O(n) comparisons.
+@  On return, all elements before |i| are ≤ a[i] and all after are >.
+@  @&lt;Partition@&gt;=
+@=
+void sort(int *a, size_t lo, size_t hi) {
+    if (lo + 1 &gt;= hi) return;
+    int pivot = a[hi - 1];
+    size_t i = lo;
+    for (size_t j = lo; j &lt; hi - 1; j++)
+        if (a[j] &lt;= pivot) {
+            int t = a[i]; a[i] = a[j]; a[j] = t;
+            i++;
+        }
+    int t = a[i]; a[i] = a[hi - 1]; a[hi - 1] = t;
+    if (i      &gt; lo) sort(a, lo, i);
+    if (hi - 1 &gt; i)   sort(a, i + 1, hi);
+}</code></pre>
+
+  <p class="muted">Build it: <code>ctangle qsort.w &amp;&amp; cc qsort.c -o qsort</code>
+     &nbsp;|&nbsp; Manual: <code>cweave qsort.w &amp;&amp; pdflatex qsort.tex</code></p>
+
+  <!-- ===================== THE ARBITRAGE ===================== -->
+  <h2>The arbitrage</h2>
+
+  <table class="compare">
+    <thead>
+      <tr><th>What the enterprise does</th><th>What you do</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="bad">1,200 transitive npm packages</td><td class="good">9 packages, all from first-party registries</td></tr>
+      <tr><td class="bad">Microservice A → queue → B → cache</td><td class="good">A pure function <code>f . g . h</code></td></tr>
+      <tr><td class="bad">40-page runbook, 6-month-stale</td><td class="good">Scaladoc on the type — the doc IS the type</td></tr>
+      <tr><td class="bad">Datadog / NewRelic monthly invoice</td><td class="good">Printf on stdout, no bill</td></tr>
+      <tr><td class="bad">SRE on call for stateful services</td><td class="good">Single static binary, restart-and-forget</td></tr>
+      <tr><td class="bad">Quarterly security review of CVEs</td><td class="good">Signed commits + dependency lock</td></tr>
+      <tr><td class="bad">Onboarding doc that nobody reads</td><td class="good">A literate PDF that compiles</td></tr>
+    </tbody>
+  </table>
+
+  <p class="muted">The arbitrage isn't "cheaper". It's discipline sold as product.</p>
+
+  <!-- ===================== REPOSITORY SHAPE ===================== -->
+  <h2>What you ship</h2>
+  <div class="tree">
+<pre><b>elite-generalist/</b>
+├── <span class="hl">workflow/</span>      elite-generalist-pipeline.md     (the philosophy)
+├── <span class="hl">templates/</span>
+│   ├── haskell/   <b>Audit.hs</b> + <b>Spec.hs</b>          (pure pipeline + properties)
+│   ├── scala/     <b>Audit.scala</b> + <b>AuditSpec.scala</b> (algebraic + ZIO + properties)
+│   └── literate-c/<b>qsort.w</b>                          (one source, two artifacts)
+├── data/         transactions.csv · users.json · transactions.json
+├── project/      package.yaml · cabal.project · build.sbt
+├── examples/     run.sh · Main.hs
+├── reports/      audit.json                  (sample output, u-9 flagged)
+└── <span class="hl">repositories.md</span>  where to publish &amp; practice</pre>
+  </div>
+
+  <!-- ===================== THE THREE TEMPLATES ===================== -->
+  <h2>Three templates, one discipline</h2>
+  <div class="three">
+    <div class="card">
+      <div class="tag">Haskell</div>
+      <h3>Pure declarative pipeline</h3>
+      <p>3 direct deps (aeson, text, QuickCheck). One file. Every public function is its own type. The signature IS the spec; the property IS the test.</p>
+    </div>
+    <div class="card">
+      <div class="tag">Scala 3</div>
+      <h3>Algebraic types + ZIO</h3>
+      <p>3 direct deps (zio, zio-json, scalacheck). <code>opaque type</code> + <code>enum</code> prevent stringly-typed data. Effects are typed at the boundary.</p>
+    </div>
+    <div class="card">
+      <div class="tag">Literate C</div>
+      <h3>Code IS the manual</h3>
+      <p>0 deps. <code>.w</code> weaves prose and C. <code>ctangle</code> produces <code>qsort.c</code>; <code>cweave</code> produces <code>qsort.pdf</code>. One source, two artifacts.</p>
+    </div>
+  </div>
+
+  <h2>Sample output — the agent's deliverable</h2>
+<pre><code>{
+  "generatedAt": 1707091200,
+  "totalCredits": 1454500,
+  "totalDebits": -274200,
+  "flaggedCount": 0,
+  "topDebits": [
+    { "userId": "u-6", "name": "Frank Walker", "credit": 500000, "debit": -65500, "net": 434500, "unknown": false },
+    { "userId": "u-1", "name": "Alice Martin", "credit": 214500, "debit": -17300, "net": 197200, "unknown": false },
+    { "userId": "u-9", "name": "?",             "credit": 100000, "debit": -25000, "net":  75000, "unknown": true  }
+  ]
+}</code></pre>
+
+  <p class="muted">
+    The fake data is rigged: <code>tx-0023</code> and <code>tx-0031</code>
+    reference <code>u-9</code>, which is <b>not</b> in <code>users.json</code>.
+    Run the pipeline and <code>u-9</code> shows up with <code>unknown: true</code>
+    and <code>name: "?"</code>. An enterprise pipeline emits that bug
+    <i>after</i> a release. The property tests catch it at compile time.
+  </p>
+
+</main>
+
+<footer>
+  Elite Generalist — MIT. The discipline is the product.
+</footer>
+
+</body>
+</html>

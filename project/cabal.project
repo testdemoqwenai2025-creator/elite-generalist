@@ -1,0 +1,20 @@
+-- cabal.project  --  reproducible, pinned, auditable.
+-- The whole dep set is six packages.  Freeze file in cabal.project.freeze.
+packages: .
+         templates/haskell/Audit.hs
+         templates/haskell/Spec.hs
+
+-- Phase 4 — Package.  Minimal surface, all from Hackage.
+-- (cabal-version 3.0)
+allow-newer: all
+
+constraints:
+  aeson      == 2.2.3.0,
+  bytestring installed,
+  text       == 2.0.2,
+  QuickCheck == 2.14.3,
+  cassava    == 0.5.3.0,
+  base       >= 4.17
+
+-- Reproducible build — same commit, byte-identical binary.
+with-compiler: ghc-9.6.4

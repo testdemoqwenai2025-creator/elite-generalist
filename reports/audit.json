@@ -1,0 +1,22 @@
+{
+  "generatedAt": 1707091200,
+  "totalCredits": 1454500,
+  "totalDebits": -274200,
+  "flaggedCount": 1,
+  "topDebits": [
+    { "userId": "u-6", "userName": "Frank Walker", "credits": 500000, "debits": -65500, "net": 434500, "unknown": false },
+    { "userId": "u-1", "userName": "Alice Martin",  "credits": 214500, "debits": -17300, "net": 197200, "unknown": false },
+    { "userId": "u-3", "userName": "Carol Bernard", "credits": 300000, "debits": -18300, "net": 281700, "unknown": false },
+    { "userId": "u-4", "userName": "David Petit",   "credits": 65000,  "debits": -46000, "net": 19000,  "unknown": false },
+    { "userId": "u-5", "userName": "Eve Robinson",  "credits": 155000, "debits": -15000, "net": 140000, "unknown": false }
+  ],
+  "allSummaries": [
+    { "userId": "u-1", "userName": "Alice Martin",  "credits": 214500, "debits": -17300, "net": 197200, "unknown": false },
+    { "userId": "u-2", "userName": "Bob Lefebvre",  "credits": 0,      "debits": -48300, "net": -48300, "unknown": false },
+    { "userId": "u-3", "userName": "Carol Bernard", "credits": 300000, "debits": -18300, "net": 281700, "unknown": false },
+    { "userId": "u-4", "userName": "David Petit",   "credits": 65000,  "debits": -46000, "net": 19000,  "unknown": false },
+    { "userId": "u-5", "userName": "Eve Robinson",  "credits": 155000, "debits": -15000, "net": 140000, "unknown": false },
+    { "userId": "u-6", "userName": "Frank Walker",  "credits": 500000, "debits": -65500, "net": 434500, "unknown": false },
+    { "userId": "u-9", "userName": "?",             "credits": 100000, "debits": -25000, "net": 75000,  "unknown": true  }
+  ]
+}

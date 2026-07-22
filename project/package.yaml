@@ -1,0 +1,35 @@
+name:                elite-audit
+version:             0.1.0.0
+synopsis:            Pure declarative ledger audit pipeline.
+description:         Haskell template for the Elite Generalist pipeline.
+license:             MIT
+author:              Mavis
+maintainer:          agent@example.com
+category:            Finance
+build-type:          Simple
+
+-- Three direct deps.  Total transitive ~20.  Compare to a typical
+-- Node "hello world" with 1,200.
+library
+  exposed-modules:   Audit
+  build-depends:    base >= 4.17
+                  , aeson
+                  , text
+                  , bytestring
+                  , QuickCheck
+                  , cassava
+  hs-source-dirs:   templates/haskell
+  default-language: Haskell2010
+
+executable audit-cli
+  main-is:          Main.hs
+  build-depends:    base, elite-audit, text
+  hs-source-dirs:   examples/haskell
+  default-language: Haskell2010
+
+test-suite audit-spec
+  type:             exitcode-stdio-1.0
+  main-is:          Spec.hs
+  build-depends:    base, elite-audit, QuickCheck
+  hs-source-dirs:   templates/haskell
+  default-language: Haskell2010
