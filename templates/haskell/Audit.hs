@@ -211,7 +211,6 @@ addMoney (Money a) (Money b) = Money (a + b)
 lookupUser :: [UserSummary] -> Text -> Maybe UserSummary
 lookupUser = foldr step Nothing
   where step s acc | userId' s == k = Just s | otherwise = acc
-        (UserSummary k _ _ _ _ _ ) = s  -- see, we use RecordWildCards + pattern
 
 upsertUser :: [UserSummary] -> Text -> UserSummary -> [UserSummary]
 upsertUser xs k v = v : filter (\s -> userId' s /= k) xs
