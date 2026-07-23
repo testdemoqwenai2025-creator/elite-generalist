@@ -148,34 +148,36 @@ def auditLedger(now: Long, users: List[User])(txs: List[Transaction]): AuditRepo
   )
 
 // ---------------------------------------------------------------------------
-//  Pipeline algebra — the "Elite Generalist" abstraction.
-//  Stages compose left-to-right with the `>>` operator. Type inference does
-//  the wiring; no reflection, no runtime dispatch.
+//  Pipeline composition.
+//  FUTURE-002: the previous `Pipeline[A, B]` type with a `>>` operator
+//  had a suspicious `asInstanceOf` cast in the example composition — the
+//  type system couldn't verify the chain. The fix is to drop the type
+//  entirely and rely on plain function composition. Stages are pure
+//  functions; we just thread the data through them.
+//
+//  The "Elite Generalist" abstraction is *function composition*, not a
+//  custom type. Below is the canonical example: every stage is a
+//  function, the pipeline is `f compose g compose h`.
 // ---------------------------------------------------------------------------
 
-trait Pipeline[A, B]:
-  def run(a: A): B
-  def >>[C](next: Pipeline[B, C]): Pipeline[A, C] = (a: A) => next.run(this.run(a))
+/** A stage of the audit pipeline.  Plain Scala function. */
+type Stage[A, B] = A => B
 
-object Pipeline:
-  given [A]: Pipeline[A, A] = identity(_)
+/** A function that wires three stages into one expression. */
+def composeAudit[A, B, C, D](
+  f: Stage[A, B],
+  g: Stage[B, C],
+  h: Stage[C, D]
+): Stage[A, D] = a => h(g(f(a)))
 
-  def from[A, B](f: A => B): Pipeline[A, B] = f
-
-  // Library stages — each is a one-liner that just lifts a pure function.
-  val normalizeStage: Pipeline[List[Transaction], List[Transaction]]     = from(normalize)
-  def enrichStage(users: List[User]): Pipeline[List[Transaction], List[LedgerEntry]] =
-    from(enrichWith(users))
-  val summariseStage: Pipeline[List[LedgerEntry], List[UserSummary]]    = from(summarise)
-  def auditStage(now: Long, users: List[User])
-                : Pipeline[List[Transaction], AuditReport] =
-    from(auditLedger(now, users))
-
-/** Example: one expression that composes the whole service. */
-def examplePipeline(now: Long, users: List[User]): Pipeline[List[Transaction], AuditReport] =
-  Pipeline.normalizeStage >> Pipeline.enrichStage(users) >> Pipeline.summariseStage
-    .asInstanceOf[Pipeline[List[Transaction], AuditReport]] // see note below
-  // In production we collapse the stages into a single audit call for clarity.
+/** The whole audit, as a function.  The runtime representation is one
+ *  function call per stage; the *type* representation is `Stage`. */
+def auditPipeline(now: Long, users: List[User]): Stage[List[Transaction], AuditReport] =
+  composeAudit(
+    normalize,
+    enrichWith(users),
+    summarise.andThen(auditLedger(now, users))
+  )
 
 // ---------------------------------------------------------------------------
 //  Phase 5 — Distribute. Effect boundary.
