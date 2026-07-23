@@ -43,10 +43,14 @@ jobs:
           cabal-version: "3.10"
 
       - name: Cache cabal store
-        uses: haskell-actions/cabal-cache@v2
+        uses: actions/cache@v4
         with:
-          store-username: ${{ github.actor }}
-          store-password: ${{ secrets.GITHUB_TOKEN }}
+          path: |
+            ~/.cabal/store
+            dist-newstyle
+          key: ${{ runner.os }}-cabal-${{ hashFiles('project/cabal.project', 'project/cabal.project.freeze', 'project/package.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-cabal-
 
       - name: Show toolchain versions
         run: |
