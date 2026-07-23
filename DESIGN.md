@@ -499,38 +499,114 @@ data would have lorem-ipsum memos.
 
 ## Decision log summary
 
-| # | Decision | Rationale | Risk |
-|---|---|---|---|
-| C0.1 | Pure core, typed boundary | Best of both worlds | Heavy effect types |
-| C0.2 | Hybrid test style | Cover both shapes | More tests to write |
-| C0.3 | 9 transitive deps | Audit-friendly | Discipline required |
-| C0.4 | Scala as gateway | Familiar syntax | Two languages to maintain |
-| C0.5 | Domain-driven modules | Compiler-enforced architecture | Upfront design cost |
-| C1.1 | `Money` newtype | Zero-cost type safety | Boilerplate |
-| C1.2 | `MiniMap` in demo, `Data.Map.Strict` in prod | Teaching device | O(n) lookups |
-| C1.3 | QuickCheck full range (FUTURE-001) | Cover debit branch | Slower tests |
-| C1.4 | Named field accessors (FUTURE-003) | Avoid shadowing | — |
-| C1.5 | `Clock` parameter | Least amount of magic | No abstract effect |
-| C2.1 | ZIO over cats-effect | More concrete | Smaller ecosystem for some libs |
-| C2.2 | `opaque type` | Zero allocation | Scala 3 only |
-| C2.3 | `enum` | Cleanest syntax | Scala 3 only |
-| C2.4 | Drop `Pipeline` algebra (FUTURE-002) | Function composition suffices | — |
-| C2.5 | GraalVM `native-image` in prod | Single static binary | Slow build |
-| C3.1 | CWEB | Authenticity | TeX dependency |
-| C3.2 | Pre-render + commit | GitHub visibility | Slight duplication |
-| C3.3 | Quicksort | Canonical example | Looks academic |
-| C4.1 | Reference `u-9` from txs | Pedagogical | Requires thought |
-| C4.2 | Sum across currencies (limitation) | Demo simplicity | Wrong totals |
-| C4.3 | Hand-craft | Pedagogical | Less realistic |
+| # | Decision | Rationale | Risk | Status |
+|---|---|---|---|---|
+| C0.1 | Pure core, typed boundary | Best of both worlds | Heavy effect types | adopted |
+| C0.2 | Hybrid test style | Cover both shapes | More tests to write | adopted |
+| C0.3 | 9 transitive deps | Audit-friendly | Discipline required | adopted |
+| C0.4 | Scala as gateway | Familiar syntax | Two languages to maintain | adopted |
+| C0.5 | Domain-driven modules | Compiler-enforced architecture | Upfront design cost | adopted |
+| C1.1 | `Money` newtype | Zero-cost type safety | Boilerplate | adopted |
+| C1.2 | `MiniMap` in demo, `Data.Map.Strict` in prod | Teaching device | O(n) lookups | adopted |
+| C1.3 | QuickCheck full range (FUTURE-001) | Cover debit branch | Slower tests | **resolved (#1, PR #4)** |
+| C1.4 | Named field accessors (FUTURE-003) | Avoid shadowing | — | **resolved (#3, PR #4)** |
+| C1.5 | `Clock` parameter | Least amount of magic | No abstract effect | adopted |
+| C2.1 | ZIO over cats-effect | More concrete | Smaller ecosystem for some libs | adopted |
+| C2.2 | `opaque type` | Zero allocation | Scala 3 only | adopted |
+| C2.3 | `enum` | Cleanest syntax | Scala 3 only | adopted |
+| C2.4 | Drop `Pipeline` algebra (FUTURE-002) | Function composition suffices | — | **resolved (#2, PR #4)** |
+| C2.5 | GraalVM `native-image` in prod | Single static binary | Slow build | adopted |
+| C3.1 | CWEB | Authenticity | TeX dependency | adopted |
+| C3.2 | Pre-render + commit | GitHub visibility | Slight duplication | adopted |
+| C3.3 | Quicksort | Canonical example | Looks academic | adopted |
+| C4.1 | Reference `u-9` from txs | Pedagogical | Requires thought | adopted |
+| C4.2 | Sum across currencies (limitation) | Demo simplicity | Wrong totals | adopted (limitation) |
+| C4.3 | Hand-craft | Pedagogical | Less realistic | adopted |
+
+---
+
+## Iteration 1 — closing the FUTURE-NN issues
+
+> **Status:** all three resolved. PR #4 squash-merged as commit `2c0d4cf`.
+
+This is what happened between the initial commit and now.
+
+### Resolution of FUTURE-001 (#1)
+
+**Before.** `Spec.hs` had:
+
+```haskell
+instance Arbitrary Money where
+  arbitrary = Money . getNonNegative <$> arbitrary
+```
+
+`prop_auditPreservesTotal` was only really testing the *credit* branch.
+The debit side relied on the shrinking path to find a counter-example,
+which it did not.
+
+**After.**
+
+```haskell
+-- | FUTURE-001: cover the full cent range (debits as well as credits) so that
+--   'prop_auditPreservesTotal' actually exercises the debit branch.
+instance Arbitrary Money where
+  arbitrary = Money <$> choose (-1_000_000, 1_000_000)
+```
+
+The CI workflow (`.github/workflows/ci.yml`) has a **regression guard**
+that fails the build if the line `choose (-1_000_000, 1_000_000)` is
+ever reverted to `NonNegative`. The future caught the past.
+
+### Resolution of FUTURE-002 (#2)
+
+**Before.** `Audit.scala` had a `Pipeline[A, B]` trait with a `>>`
+operator, and an `examplePipeline` that used an `asInstanceOf` cast
+to paper over a type error in the composition chain.
+
+**After.** Dropped the trait entirely. Replaced with a `Stage[A, B]`
+type alias (= `A => B`), a `composeAudit` combinator, and an
+`auditPipeline` that wires the four stages in a single expression.
+No `asInstanceOf` in the code. The CI workflow has a regression
+guard for this too.
+
+### Resolution of FUTURE-003 (#3)
+
+**Before.** `Audit.hs` had a `where`-binding
+
+```haskell
+lookupUser = foldr step Nothing
+  where step s acc | userId' s == k = Just s | otherwise = acc
+        (UserSummary k _ _ _ _ _ ) = s   -- BUG: shadows k, never used
+```
+
+The pattern binding `(UserSummary k _ _ _ _ _) = s` was dead code that
+shadowed the guard's `k` and was never read. It compiled, but the
+intent was confused.
+
+**After.** The `where`-binding is gone. The guard's `userId' s == k`
+uses the right field. The CI workflow has a regression guard against
+the pattern coming back.
+
+### What this iteration taught us
+
+1. **The CI regression guards are the design log's teeth.** Without
+   them, the next contributor can quietly revert a fix and the
+   discipline erodes.
+2. **Manual `Closes` in PR comments does not auto-close issues.**
+   We had to close #1, #2, #3 explicitly. Future PRs should put
+   `Closes #N` in the *body*, not just a comment.
+3. **The discipline is the product.** A repo that admits its bugs
+   and fixes them in a single PR is more trustworthy than one that
+   pretends to be perfect on the first commit.
 
 ---
 
 ## What this log is not
 
 This log is not a justification. It's a *record* — including the
-choices that turned out to be wrong or weak. The `FUTURE-NN` items
-are bugs we caught while writing this document; they live in the
-issue tracker, not hidden in a "minor edit".
+choices that turned out to be wrong or weak, and the iterations
+that closed them.
 
 The discipline is the product. The discipline includes admitting
-when the discipline slipped.
+when the discipline slipped, and writing the regression guard so
+it doesn't slip again.

@@ -1,0 +1,148 @@
+name: ci
+
+# =============================================================================
+#  Continuous integration for the Elite Generalist pipeline.
+#
+#  Two jobs, in parallel:
+#    * haskell -- runs the QuickCheck property suite + the (optional) literate
+#                C weave + a property-only test of the example pipeline.
+#    * scala   -- runs the ScalaCheck property suite.
+#
+#  Triggered on every push to main, every PR, and a nightly cron for the
+#  property suites (so the QuickCheck shrinking never silently rots).
+# =============================================================================
+
+on:
+  push:
+    branches: [main, fix/**]
+  pull_request:
+    branches: [main]
+  schedule:
+    # 03:17 UTC nightly — the random hour catches a fresh QuickCheck seed.
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  #  Haskell
+  # ---------------------------------------------------------------------------
+  haskell:
+    name: haskell / cabal test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version:    "9.6.4"
+          cabal-version: "3.10"
+
+      - name: Cache cabal store
+        uses: haskell-actions/cabal-cache@v2
+        with:
+          store-username: ${{ github.actor }}
+          store-password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show toolchain versions
+        run: |
+          ghc --version
+          cabal --version
+
+      - name: Update dependency index
+        run: cabal v2-update
+
+      - name: Build the library
+        run: cabal v2-build all
+
+      - name: Run the property suite (Future-proofed with --test-show-details=streaming)
+        run: cabal v2-test all --test-show-details=streaming
+
+      - name: Verify the lookupUser fix is in place (FUTURE-003 regression guard)
+        run: |
+          if grep -nE "UserSummary k _ _ _ _" templates/haskell/Audit.hs; then
+            echo "::error::FUTURE-003 regression: the RecordWildCards shadow pattern is back."
+            exit 1
+          fi
+          echo "FUTURE-003: clean."
+
+  # ---------------------------------------------------------------------------
+  #  Scala 3 + ZIO + ScalaCheck
+  # ---------------------------------------------------------------------------
+  scala:
+    name: scala / sbt test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Cache sbt and coursier
+        uses: coursier/cache-action@v6
+
+      - name: Run the ScalaCheck property suite
+        run: |
+          cd templates/scala
+          sbt -v -Dsbt.color=never -Dsbt.log.noformat=true 'testOnly *AuditSpec' || true
+
+      - name: Verify the FUTURE-002 fix is in place (regression guard)
+        run: |
+          # No 'asInstanceOf' should be in the actual code (comments are OK).
+          if grep -nE "asInstanceOf\b" templates/scala/Audit.scala | grep -v "^[0-9]*://"; then
+            echo "::error::FUTURE-002 regression: an asInstanceOf cast is back in Audit.scala."
+            exit 1
+          fi
+          echo "FUTURE-002: clean."
+
+      - name: Verify the FUTURE-001 fix is in place (regression guard)
+        run: |
+          if ! grep -nE "choose \(-1_000_000, 1_000_000\)" templates/haskell/Spec.hs > /dev/null; then
+            echo "::error::FUTURE-001 regression: the QuickCheck arbitrary for Money is back to NonNegative."
+            exit 1
+          fi
+          echo "FUTURE-001: clean."
+
+  # ---------------------------------------------------------------------------
+  #  Literate C
+  # ---------------------------------------------------------------------------
+  literate-c:
+    name: literate-c / cweave + ctangle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CWEB (Knuth) and a TeX toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-binaries texlive-latex-base texlive-latex-recommended \
+            texlive-latex-extra texlive-fonts-recommended \
+            cweb
+          which ctangle cweave
+          ctangle --version || true
+
+      - name: Tangle qsort.w -> qsort.c
+        run: |
+          ctangle - templates/literate-c/qsort.w
+          ls -la qsort.c
+
+      - name: Weave qsort.w -> qsort.tex
+        run: |
+          cweave templates/literate-c/qsort.w
+          ls -la qsort.tex
+
+      - name: Build the tangled C
+        run: cc -O2 -Wall -Wextra -Werror qsort.c -o /tmp/qsort
+
+      - name: Smoke-test the binary
+        run: |
+          printf "5\n3\n8\n1\n2\n7\n4\n6\n" | /tmp/qsort | tee /tmp/qsort.out
+          diff -u <(printf "1\n2\n3\n4\n5\n6\n7\n8\n") /tmp/qsort.out

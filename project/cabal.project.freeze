@@ -1,0 +1,122 @@
+-- =============================================================================
+--  cabal.project.freeze
+--  ---------------------------------------------------------------------------
+--  Pinned dependency versions for byte-identical reproducible builds.
+--
+--  Regenerate locally with:
+--      cabal v2-freeze
+--  Commit the result.  Phase 4 of the pipeline ("Package") depends on this
+--  being in source control.
+--
+--  Versions are the latest stable as of the last `cabal v2-update`; rotate
+--  via PR, never silently.
+-- =============================================================================
+active-repositories: hackage.haskell.org
+constraints: any.Cabal ==3.10.1.0
+             any.HUnit ==1.6.2.0
+             any.OneTuple ==0.4.2
+             any.QuickCheck ==2.14.3
+             any.StateVar ==1.2.2
+             any.aeson ==2.2.3.0
+             any.ansi-terminal ==1.1.1
+             any.ansi-terminal-types ==1.1
+             any.array ==0.5.6.0
+             any.assoc ==1.1
+             any.attoparsec ==0.14.4
+             any.base ==4.17.2.1
+             any.base-compat ==0.13.1
+             any.base-orphans ==0.9.1
+             any.bifunctors ==5.6.1
+             any.binary ==0.8.9.0
+             any.bitvec ==1.1.4.0
+             any.bytestring ==0.11.5.2
+             any.cabal-doctest ==1.0.9
+             any.cassava ==0.5.3.0
+             any.cereal ==0.5.8.3
+             any.comonad ==5.0.8
+             any.containers ==0.7
+             any.contravariant ==1.5.5
+             any.cookie ==0.4.6
+             any.deepseq ==1.5.0.0
+             any.directory ==1.3.8.1
+             any.distributive ==0.6.2.1
+             any.dlist ==1.0
+             any.doctest ==0.22.10
+             any.erf ==2.0.0.0
+             any.exceptions ==0.10.7
+             any.filepath ==1.5
+             any.foldable1-classes ==0.1
+             any.generic-deriving ==1.14.5
+             any.ghc-bignum ==1.3
+             any.ghc-boot-th ==9.6.4
+             any.ghc-prim ==0.10.0
+             any.half ==0.3.1
+             any.hashable ==1.4.4.0
+             any.hostname ==1.0.23
+             any.hourglass ==0.2.12
+             any.hsc2hs ==0.68.10
+             any.indexed-traversable ==0.1.4
+             any.indexed-traversable-instances ==0.1.2
+             any.integer-gmp ==1.1
+             any.integer-logarithms ==1.0.3.1
+             any.HTTP ==4000.4.1
+             any.HUnit ==1.6.2.0
+             any.js-chart ==2.9.4.1
+             any.megaparsec ==9.4.0
+             any.mmorph ==1.2.0
+             any.mtl ==2.3.1
+             any.mwc-random ==0.15.0.2
+             any.network ==3.1.4.0
+             any.network-uri ==2.6.4.2
+             any.old-locale ==1.0.0.7
+             any.old-time ==1.1.0.4
+             any.optparse-applicative ==0.18.1.0
+             any.parallel ==3.2.2.0
+             any.parsec ==3.1.17.0
+             any.parser-combinators ==1.3.0
+             any.pretty ==1.1.3.6
+             any.prettyprinter ==1.7.1
+             any.prettyprinter-ansi-terminal ==1.1.3
+             any.primitive ==0.9.0.0
+             any.quickcheck-instances ==0.3.30
+             any.random ==1.2.1.2
+             any.recv ==0.0.0
+             any.regex-base ==0.94.0.2
+             any.regex-posix ==0.96.0.1
+             any.resourcet ==1.3.0
+             any.rts ==1.0.2
+             any.safe ==0.3.21
+             any.safe-exceptions ==0.1.7.4
+             any.scientific ==0.3.7.0
+             any.send ==0.0.0
+             any.silently ==1.2.6.3
+             some!aeson +ordered-keymap
+             any.splitmix ==0.1.0.5
+             any.strict ==0.5
+             any.tagged ==0.8.8
+             any.template-haskell ==2.20.0.0
+             any.temporary ==1.3
+             any.text ==2.0.2
+             any.text-short ==0.1.6
+             any.tf-random ==0.5
+             any.th-abstraction ==0.6.0.0
+             any.th-compat ==0.1.5
+             any.time ==1.12.2
+             any.time-compat ==1.9.7
+             any.time-manager ==0.1.0
+             any.tls ==1.9.0
+             any.transformers ==0.6.0.1
+             any.transformers-base ==0.4.6
+             any.transformers-compat ==0.7.2
+             any.typed-process ==0.2.11.1
+             any.unix ==2.8.4.0
+             any.unix-compat ==0.7.1
+             any.unliftio-core ==0.2.1.0
+             any.uuid ==1.3.16
+             any.uuid-types ==1.0.6
+             any.vector ==0.13.1.0
+             any.vector-algorithms ==0.9.0.2
+             any.vector-stream ==0.1.0.0
+             any.witherable ==0.4.2
+             any.yaml ==0.11.11.0
+             any.zlib ==0.7.0.0
