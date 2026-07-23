@@ -3,13 +3,14 @@ name: ci
 # =============================================================================
 #  Continuous integration for the Elite Generalist pipeline.
 #
-#  Two jobs, in parallel:
-#    * haskell -- runs the QuickCheck property suite + the (optional) literate
-#                C weave + a property-only test of the example pipeline.
-#    * scala   -- runs the ScalaCheck property suite.
+#  Three jobs, in parallel:
+#    * haskell    -- runs the QuickCheck property suite (cabal test).
+#    * scala      -- runs the ScalaCheck property suite (sbt test).
+#    * literate-c -- tangles qsort.w, weaves qsort.tex, builds + smoke-tests
+#                   the resulting C program.
 #
-#  Triggered on every push to main, every PR, and a nightly cron for the
-#  property suites (so the QuickCheck shrinking never silently rots).
+#  Each job has a regression guard for FUTURE-001/002/003 so the fixes from
+#  PR #4 cannot be silently reverted.
 # =============================================================================
 
 on:
@@ -18,7 +19,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # 03:17 UTC nightly — the random hour catches a fresh QuickCheck seed.
+    # 03:17 UTC nightly — a fresh QuickCheck seed.
     - cron: "17 3 * * *"
   workflow_dispatch:
 
@@ -33,46 +34,66 @@ jobs:
   haskell:
     name: haskell / cabal test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Haskell
+      - name: Set up Haskell (default toolchain)
         uses: haskell-actions/setup@v2
         with:
-          ghc-version:    "9.6.4"
-          cabal-version: "3.10"
+          ghc-version:    "9.8.2"     # current stable
+          cabal-version: "3.10.2.0"  # matches the .cabal-version in cabal.project
 
       - name: Cache cabal store
         uses: actions/cache@v4
         with:
           path: |
             ~/.cabal/store
-            dist-newstyle
+            project/dist-newstyle
           key: ${{ runner.os }}-cabal-${{ hashFiles('project/cabal.project', 'project/cabal.project.freeze', 'project/package.yaml') }}
           restore-keys: |
             ${{ runner.os }}-cabal-
 
       - name: Show toolchain versions
         run: |
-          ghc --version
-          cabal --version
+          ghc    --version
+          cabal  --version
+          hpack  --version || true
+
+      - name: Generate .cabal from package.yaml (hpack)
+        run: |
+          if ! command -v hpack >/dev/null; then
+            cabal v2-install --installdir=/tmp/hpack --install-method=copy hpack
+            export PATH="/tmp/hpack:$PATH"
+          fi
+          hpack --force .
 
       - name: Update dependency index
         run: cabal v2-update
 
-      - name: Build the library
-        run: cabal v2-build all
+      - name: Build the library + tests
+        run: cabal v2-build all --enable-tests
 
-      - name: Run the property suite (Future-proofed with --test-show-details=streaming)
+      - name: Run the property suite
         run: cabal v2-test all --test-show-details=streaming
 
-      - name: Verify the lookupUser fix is in place (FUTURE-003 regression guard)
+      - name: FUTURE-003 regression guard
         run: |
-          if grep -nE "UserSummary k _ _ _ _" templates/haskell/Audit.hs; then
+          if grep -nE "UserSummary k _ _ _ _" ../templates/haskell/Audit.hs; then
             echo "::error::FUTURE-003 regression: the RecordWildCards shadow pattern is back."
             exit 1
           fi
           echo "FUTURE-003: clean."
+
+      - name: FUTURE-001 regression guard
+        run: |
+          if ! grep -nE "choose \(-1_000_000, 1_000_000\)" ../templates/haskell/Spec.hs > /dev/null; then
+            echo "::error::FUTURE-001 regression: the QuickCheck arbitrary for Money is back to NonNegative."
+            exit 1
+          fi
+          echo "FUTURE-001: clean."
 
   # ---------------------------------------------------------------------------
   #  Scala 3 + ZIO + ScalaCheck
@@ -80,6 +101,9 @@ jobs:
   scala:
     name: scala / sbt test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: templates/scala
     steps:
       - uses: actions/checkout@v4
 
@@ -93,26 +117,26 @@ jobs:
         uses: coursier/cache-action@v6
 
       - name: Run the ScalaCheck property suite
+        # `test` (not testOnly) because there's no sbt build configured
+        # for the in-repo scala files alone; this is best-effort.
         run: |
-          cd templates/scala
-          sbt -v -Dsbt.color=never -Dsbt.log.noformat=true 'testOnly *AuditSpec' || true
+          if [ -f build.sbt ]; then
+            sbt -v -Dsbt.color=never -Dsbt.log.noformat=true test
+          else
+            echo "No build.sbt in templates/scala -- skipping sbt run, running grep guards only."
+          fi
+        continue-on-error: true
 
-      - name: Verify the FUTURE-002 fix is in place (regression guard)
+      - name: FUTURE-002 regression guard
         run: |
           # No 'asInstanceOf' should be in the actual code (comments are OK).
-          if grep -nE "asInstanceOf\b" templates/scala/Audit.scala | grep -v "^[0-9]*://"; then
+          bad=$(grep -nE "asInstanceOf\b" Audit.scala | grep -v "^[0-9]*://" || true)
+          if [ -n "$bad" ]; then
             echo "::error::FUTURE-002 regression: an asInstanceOf cast is back in Audit.scala."
+            echo "$bad"
             exit 1
           fi
           echo "FUTURE-002: clean."
-
-      - name: Verify the FUTURE-001 fix is in place (regression guard)
-        run: |
-          if ! grep -nE "choose \(-1_000_000, 1_000_000\)" templates/haskell/Spec.hs > /dev/null; then
-            echo "::error::FUTURE-001 regression: the QuickCheck arbitrary for Money is back to NonNegative."
-            exit 1
-          fi
-          echo "FUTURE-001: clean."
 
   # ---------------------------------------------------------------------------
   #  Literate C
@@ -123,10 +147,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install CWEB (Knuth) and a TeX toolchain
-        # CWEB's ctangle and cweave ship in texlive-extra-utils on Ubuntu.
-        # The standalone 'cweb' package is not in Ubuntu 24.04's universe,
-        # but the binaries are the same.
+      - name: Install CWEB (ctangle + cweave) and a TeX toolchain
+        # The 'cweb' package isn't in Ubuntu 24.04's universe, but the same
+        # 'ctangle' and 'cweave' binaries ship in 'texlive-extra-utils'.
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
@@ -134,21 +157,22 @@ jobs:
             texlive-latex-extra texlive-fonts-recommended \
             texlive-extra-utils
           which ctangle cweave
-          ctangle --help 2>&1 | head -1 || true
-          cweave --help 2>&1 | head -1 || true
 
       - name: Tangle qsort.w -> qsort.c
+        # NO leading dash — ctangle interprets '-' as stdin and looks for qsort.ch.
         run: |
-          ctangle - templates/literate-c/qsort.w
-          ls -la qsort.c
+          ctangle templates/literate-c/qsort.w - /tmp/qsort.c
+          head -5 /tmp/qsort.c
+          wc -l /tmp/qsort.c
 
       - name: Weave qsort.w -> qsort.tex
         run: |
-          cweave templates/literate-c/qsort.w
-          ls -la qsort.tex
+          cweave templates/literate-c/qsort.w - /tmp/qsort.tex
+          head -10 /tmp/qsort.tex
+          wc -l /tmp/qsort.tex
 
       - name: Build the tangled C
-        run: cc -O2 -Wall -Wextra -Werror qsort.c -o /tmp/qsort
+        run: cc -O2 -Wall -Wextra -Werror /tmp/qsort.c -o /tmp/qsort
 
       - name: Smoke-test the binary
         run: |
